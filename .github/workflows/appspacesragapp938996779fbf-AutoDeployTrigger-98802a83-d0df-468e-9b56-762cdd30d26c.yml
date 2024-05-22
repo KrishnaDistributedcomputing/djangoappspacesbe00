@@ -1,0 +1,47 @@
+name: Trigger auto deployment for appspacesragapp938996779fbf
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '//**'
+    - '.github/workflows/appspacesragapp938996779fbf-AutoDeployTrigger-98802a83-d0df-468e-9b56-762cdd30d26c.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.APPSPACESRAGAPP938996779FBF_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.APPSPACESRAGAPP938996779FBF_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.APPSPACESRAGAPP938996779FBF_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: 
+          registryUsername: ${{ secrets.APPSPACESRAGAPP938996779FBF_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.APPSPACESRAGAPP938996779FBF_REGISTRY_PASSWORD }}
+          containerAppName: appspacesragapp938996779fbf
+          resourceGroup: appspacesragapp93899677
+          imageToBuild: default/[parameters('containerAppName')]:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
